@@ -14,6 +14,7 @@
 #include <ctype.h>
 
 #define DROP(x, y) { for(y = i; i < len && x; i++); }
+#define BEGINS(x, y) (strncmp(x, y, strlen(y)) == 0)
 
 static int start();
 static int addoptarg(char *arg, int len);
@@ -23,17 +24,17 @@ static int parseconfig(char *text, int len);
 static int loadconfig(char *path);
 static int argify(char **value, int len);
 
-static char *binary = "/usr/bin/echo";
-static int verbose = 0;
 char **cargv;
 char **curopt = NULL;
 char *cwd = ".";
+static char *binary = "qemu-system-x86_64";
 int cargc = 0;
 int maxargc = 0;
 
 int
 start() {
-	execv(binary, cargv);
+	execvp(binary, cargv);
+	perror(binary);
 	return 1;
 }
 
@@ -59,17 +60,22 @@ addoptarg(char *arg, int len) {
 int
 addopt(char *opt, int len) {
 	char *optdup;
-	if(strncmp(opt, "cwd", 3) == 0) {
+	if(BEGINS(opt, "cwd")) {
 		curopt = &cwd;
-		return 0;
 	}
-	if(!(optdup = calloc(sizeof(char), len + 2))) {
-		perror("malloc");
-		return 1;
+	else if(BEGINS(opt, "binary")) {
+		curopt = &binary;
 	}
-	optdup[0] = '-';
-	memcpy(optdup+1, opt, len);
-	return addoptarg(optdup, len + 1);
+	else {
+		if(!(optdup = calloc(sizeof(char), len + 2))) {
+			perror("malloc");
+			return 1;
+		}
+		optdup[0] = '-';
+		memcpy(optdup+1, opt, len);
+		return addoptarg(optdup, len + 1);
+	}
+	return 0;
 }
 
 int
@@ -77,10 +83,6 @@ compact(char *text, int i, int len) {
 	int _i, indent, curindent, w=i++, first;
 
 	DROP(isspace(text[i]) && text[i] != '\n', i);
-	//if(text[i] != '\n') {
-	//	fputs("Error: expected newline after ':' ", stderr);
-	//	return 1;
-	//}
 
 	for(indent = -1, first = 1; i < len;) {
 		curindent = 0;
@@ -99,21 +101,19 @@ compact(char *text, int i, int len) {
 		else if(indent == -1 && !first) {
 			indent = curindent;
 			if(indent == 0) {
-				fputs("Error: expected indention after ':'. ", stderr);
+				fputs("Error: expected indention after ':'.\n", stderr);
 				return 1;
 			}
 		}
 		else if(indent > curindent)
 			break;
 		DROP(isspace(text[i]), i);
-		DROP(isalnum(text[i]), _i);
+		DROP(isalnum(text[i]) || text[i] == '-', _i);
 		memmove(&text[w], &text[_i], i - _i);
 		w += i - _i;
-		DROP(text[i] != '\n' && isspace(text[i]), i);
-		if(text[i] == '=' && !first) {
+		DROP(text[i] != '\n' && isspace(text[i]), _i);
+		if(i != _i && !first) {
 			text[w++] = '=';
-			i++;
-			DROP(text[i] != '\n' && isspace(text[i]), i);
 		}
 		DROP(text[i] != '\n', _i);
 		memmove(&text[w], &text[_i], i - _i);
@@ -151,26 +151,23 @@ parseconfig(char *text, int len) {
 			continue;
 		}
 
-		DROP(isalnum(text[i]), _i);
+		DROP(isalnum(text[i]) || text[i] == '-', _i);
 
 		addopt(&text[_i], i - _i);
 
-		DROP(isspace(text[i]) && text[i] != '\n', i);
+		DROP(isspace(text[i]) && text[i] != '\n', _i);
 		if(text[i] == '\n')
 			continue;
-		else if(text[i] == '=')
-			i++;
 		else if(text[i] == ':') {
 			if(compact(text, i, len)) {
 				fprintf(stderr, "At line %i character %i. ", line, i - linestart);
 				return 1;
 			}
 		}
-		else {
+		else if(i == _i) {
 			fprintf(stderr, "Expected '=' or ':' at line %i character %i. ", line, i - linestart);
 			return 1;
 		}
-		DROP(isspace(text[i]) && text[i] != '\n', i);
 
 		if(text[i] == '\n') {
 			fprintf(stderr, "Value expected at line %i character %i. ", line, i - linestart);
@@ -232,38 +229,42 @@ loadconfig(char *path) {
 int main(int argc, char *argv[]) {
 	int opt;
 
-	while ((opt = getopt(argc, argv, "q:c:nvV")) != -1) {
+	while ((opt = getopt(argc, argv, "q:V")) != -1) {
 		switch(opt) {
 			case 'q':
 				binary = optarg;
 				break;
 			case 'V':
-				puts("qemud-" VERSION);
+				puts("qemuconf-" VERSION);
 				return EXIT_SUCCESS;
-			case 'v':
-				verbose = 1;
-				break;
 usage:
 			default:
-				printf("Usage: %s [-q exec] [-n] [-V] [-v] <name>\n", argv[0]);
+				printf("Usage: %s [-q exec] [-V] <name> [-- [qemu args...]]\n", argv[0]);
 				return EXIT_FAILURE;
 		}
 	}
-	if(optind != argc - 1)
+	if(optind >= argc)
 		goto usage;
 
-	if((maxargc = sysconf(_SC_ARG_MAX)) <= 0) {
+	if((maxargc = sysconf(_SC_ARG_MAX)) < 0) {
 		perror("sysconf");
 		return EXIT_FAILURE;
 	}
+
 	if(!(cargv = calloc(sizeof(char *), maxargc))) {
 		perror("calloc");
 		return EXIT_FAILURE;
 	}
+
 	cargv[cargc++] = binary;
 
-	if(loadconfig(argv[optind]))
+	if(loadconfig(argv[optind++]))
 		return EXIT_FAILURE;
+
+	for(; optind < argc; optind++, cargc++) {
+		cargv[cargc] = argv[optind];
+	}
+
 	if(start())
 		return EXIT_FAILURE;
 	return EXIT_SUCCESS;
