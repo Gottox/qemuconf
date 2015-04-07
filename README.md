@@ -2,7 +2,9 @@
 
 very simple configuration wrapper for qemu to be used with systemd and runit
 
-virsh is too XML-ly, lxc does not give you the kernel space and plain qemu isn't integrated into the system at all? - Try qemuconf, a thin layer around qemu which generates qemu argument lists from simple config files.
+virsh is too XML-ly, lxc does not give you the kernel space and plain qemu
+isn't integrated into the system at all? - Try qemuconf, a thin layer around
+qemu which generates qemu argument lists from simple config files.
 
 It supports all config options of qemu plus the following:
 
