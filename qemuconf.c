@@ -77,9 +77,9 @@ addopt(char *opt, int len) {
 
 int
 compact(char *text, int i, int len, int minindent) {
-	int _i, indent, curindent, w=i, first;
+	int _i, indent, curindent, w=i, line = 0;
 
-	for(curindent = 0, indent = -1, first = 1; i < len; first = 0, i++) {
+	for(curindent = 0, indent = -1, line = 0; i < len; line++, i++) {
 		DROP(isspace(text[i]) && text[i] != '\n', _i);
 		curindent = i - _i;
 
@@ -87,7 +87,7 @@ compact(char *text, int i, int len, int minindent) {
 			DROP(text[i] != '\n', i);
 			continue;
 		}
-		else if(!first && curindent <= minindent) {
+		else if(line != 0 && curindent <= minindent) {
 			break;
 		}
 
@@ -105,14 +105,14 @@ compact(char *text, int i, int len, int minindent) {
 		curindent = 0;
 	}
 	memset(&text[w], ' ', i - curindent - w);
-	text[w-1] = '\n';
+	memset(&text[w-1], '\n', line - 1);
 	text[i-curindent-1] = '\n';
 	return 0;
 }
 
 int
 parseconfig(char *text, int len) {
-	int i = 0, _i, line, linestart=0, curindent;
+	int i = 0, _i, line, linestart, curindent;
 
 	for(linestart = i = line = 0; i < len; line++, linestart = ++i) {
 		DROP(isspace(text[i]) && text[i] != '\n', _i);
@@ -133,7 +133,7 @@ parseconfig(char *text, int len) {
 			DROP(text[i] != '\n', _i);
 			text[i] = '\0';
 			if(loadconfig(&text[_i])) {
-				fprintf(stderr, "Error at line %i ", line);
+				fprintf(stderr, "Error at line %i. ", line + 1);
 				return 1;
 			}
 			continue;
@@ -147,16 +147,16 @@ parseconfig(char *text, int len) {
 		if(text[i] == '\n')
 			continue;
 		else if(compact(text, i, len, curindent)) {
-			fprintf(stderr, "At line %i character %i. ", line, i - linestart);
+			fprintf(stderr, "at line %i character %i. ", line + 1, i - linestart);
 			return 1;
 		}
 		else if(i == _i) {
-			fprintf(stderr, "Expected whitespace instead of '%c' at line %i character %i. ", text[i], line, i - linestart);
+			fprintf(stderr, "Expected whitespace instead of '%c' at line %i character %i. ", text[i], line + 1, i - linestart);
 			return 1;
 		}
 
 		if(text[i] == '\n') {
-			fprintf(stderr, "Value expected at line %i character %i. ", line, i - linestart);
+			fprintf(stderr, "Value expected at line %i character %i. ", line + 1, i - linestart);
 			return 1;
 		}
 
