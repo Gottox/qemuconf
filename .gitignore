@@ -1,1 +1,3 @@
+qemu.runit
+qemu@.service
 qemuconf
