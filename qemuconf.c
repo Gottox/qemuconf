@@ -15,7 +15,6 @@
 
 #define DROP(x, y) { for(y = i; i < len && x; i++); }
 #define BEGINS(x, y) (strncmp(x, y, strlen(y)) == 0)
-#define DEFAULT_BINARY "qemu-system-x86_64"
 
 static int start();
 static int dump();
@@ -267,7 +266,7 @@ usage:
 	}
 
 	if(!binary)
-		binary = DEFAULT_BINARY;
+		binary = BINARY;
 	cargv[0] = binary;
 	if(action())
 		return EXIT_FAILURE;
