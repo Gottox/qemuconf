@@ -4,7 +4,7 @@ QEMUCONF 1 qemuconf-0.1
 NAME
 ----
 
-qemuconf - a simple config parser for qemu
+qemuconf - simple qemu launcher with config file support
 
 SYNOPSIS
 --------
