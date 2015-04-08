@@ -44,4 +44,7 @@ uninstall:
 	rm -rf $(DESTDIR)$(MANPREFIX)/man1/qemuconf.1 $(DESTDIR)$(PREFIX)/sv/qemu-generic \
 		$(DESTDIR)$(PREFIX)/lib/systemd/system/qemu@.service $(DESTDIR)$(PREFIX)/bin/qemuconf
 
-.PHONY: clean install install-systemd install-runit uninstall
+test: qemuconf
+	@test/test.sh
+
+.PHONY: clean install install-systemd install-runit uninstall test
