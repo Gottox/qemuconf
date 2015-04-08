@@ -38,7 +38,7 @@ install-systemd: qemu@.service install
 install-runit: qemu.runit install
 	mkdir -p $(DESTDIR)$(ETCDIR)/sv/qemu-generic
 	cp -f $< $(DESTDIR)$(ETCDIR)/sv/qemu-generic/run
-	chmod 644 $(DESTDIR)$(ETCDIR)/sv/qemu-generic/run
+	chmod 755 $(DESTDIR)$(ETCDIR)/sv/qemu-generic/run
 
 uninstall:
 	rm -rf $(DESTDIR)$(MANPREFIX)/man1/qemuconf.1 $(DESTDIR)$(PREFIX)/sv/qemu-generic \

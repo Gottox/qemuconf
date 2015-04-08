@@ -2,4 +2,4 @@
 [ -r conf ] && . ./conf
 
 name=${PWD##*/qemu-}
-exec qemuconf ETCDIR/${name}.conf
+exec qemuconf ETCDIR/qemu.d/${name}.conf
