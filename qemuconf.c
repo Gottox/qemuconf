@@ -33,6 +33,10 @@ int maxargc = 0;
 
 int
 start() {
+	if(chdir(cwd)) {
+		perror(cwd);
+		return 1;
+	}
 	execvp(binary, cargv);
 	perror(binary);
 	return 1;
@@ -224,7 +228,10 @@ loadconfig(char *path) {
 		return 1;
 	}
 
-	chdir(oldwd);
+	if(chdir(oldwd)) {
+		perror(oldwd);
+		return 1;
+	}
 	free(pathdup);
 
 	return 0;
