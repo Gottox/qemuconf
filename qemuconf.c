@@ -154,29 +154,33 @@ parseconfig(char *text, int len) {
 
 		addopt(&text[_i], i - _i);
 
-		DROP(isspace(text[i]) && text[i] != '\n', _i);
+		DROP(isspace(text[i]) && text[i] != '\n', i);
 		if(text[i] == '\n')
 			continue;
-		else if(text[i] == ':') {
-			i++;
-			if(compact(text, i, len, curindent)) {
-				fprintf(stderr, "at line %i character %i. ", line + 1, i - linestart);
-				return 1;
+		else if(text[i] == ':' || i != _i) {
+			if(text[i] == ':') {
+				_i = ++i;
 			}
+			else {
+				DROP(isspace(text[i]) && text[i] != '\n', i);
+				DROP(text[i] != '\n', _i);
+			}
+
+			if(text[i-1] == ':') {
+				text[i-1] = ',';
+				if(compact(text, i, len, curindent)) {
+					fprintf(stderr, "at line %i character %i. ", line + 1, i - linestart);
+					return 1;
+				}
+				DROP(text[i] != '\n', i);
+			}
+
+			addoptarg(&text[_i], i - _i);
 		}
 		else if(i == _i) {
-			fprintf(stderr, "Expected whitespace instead of '%c' at line %i character %i. ", text[i], line + 1, i - linestart);
+			fprintf(stderr, "Expected whitespace or ':' instead of '%c' at line %i character %i. ", text[i], line + 1, i - linestart);
 			return 1;
 		}
-
-		if(text[i] == '\n') {
-			fprintf(stderr, "Value expected at line %i character %i. ", line + 1, i - linestart);
-			return 1;
-		}
-
-		DROP(text[i] != '\n', _i);
-
-		addoptarg(&text[_i], i - _i);
 	}
 	return 0;
 }
