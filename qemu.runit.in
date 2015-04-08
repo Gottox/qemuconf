@@ -1,0 +1,5 @@
+#!/bin/sh
+[ -r conf ] && . ./conf
+
+name=${PWD##*/qemu-}
+exec qemuconf ETCDIR/${name}.conf

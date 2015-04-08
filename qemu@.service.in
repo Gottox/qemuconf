@@ -1,0 +1,9 @@
+[Unit]
+Description=QEMU virtual machine (%I)
+After=syslog.target network.target
+
+[Service]
+ExecStart=PREFIX/qemuconf ETCDIR/qemu.d/%I.conf
+
+[Install]
+WantedBy=multi-user.target
