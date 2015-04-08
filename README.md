@@ -34,15 +34,14 @@ prints version and exits.
 EXAMPLES
 --------
 
-	cwd    /var/qemu/void
 	binary /usr/bin/qemu-system-x86_64
-	smp    8
+	cwd    /var/qemu/generic
+	smp    2
 	m      1024
 	enable-kvm
-	cdrom ../void/void-live-x86_64-latest.iso
 	drive:
 		if      virtio
-		file    /dev/vg0/vm1
+		file    hda.img
 	net nic:
 		vlan    0
 		model   virtio
@@ -53,9 +52,8 @@ EXAMPLES
 
 This config file will execute the following command:
 
-	/usr/bin/qemu-system-x86_64 -smp 8 -m 1024 \
-		-enable-kvm -cdrom ../void/void-live-x86_64-latest.iso \
-		-drive if=virtio,file=/dev/vg0/vm1 \
+	/usr/bin/qemu-system-x86_64 -smp 2 -m 1024 -enable-kvm \
+		-drive if=virtio,file=hda.img \
 		-net nic,vlan=0,model=virtio,macaddr=82:82:9D:AF:F0:1C \
 		-net user,vlan=0 -vnc 127.0.0.1:1
 
