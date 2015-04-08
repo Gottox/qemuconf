@@ -158,9 +158,12 @@ parseconfig(char *text, int len) {
 		DROP(isspace(text[i]) && text[i] != '\n', _i);
 		if(text[i] == '\n')
 			continue;
-		else if(compact(text, i, len, curindent)) {
-			fprintf(stderr, "at line %i character %i. ", line + 1, i - linestart);
-			return 1;
+		else if(text[i] == ':') {
+			i++;
+			if(compact(text, i, len, curindent)) {
+				fprintf(stderr, "at line %i character %i. ", line + 1, i - linestart);
+				return 1;
+			}
 		}
 		else if(i == _i) {
 			fprintf(stderr, "Expected whitespace instead of '%c' at line %i character %i. ", text[i], line + 1, i - linestart);
