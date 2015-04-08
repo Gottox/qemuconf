@@ -7,6 +7,10 @@ qemuconf: qemuconf.c
 	$(CC) $(LDFLAGS) $(CFLAGS) -DVERSION=\"$(VERSION)\" -DBINARY=\"$(BINARY)\" -o $@ $<
 
 clean:
-	rm qemuconf
+	rm -f qemuconf
+
+qemuconf.1: README.md
+	pandoc -f markdown_github -t man $< | \
+		sed "1s/\.SH/.TH/" > $@
 
 .PHONY: clean

@@ -1,0 +1,71 @@
+.TH QEMUCONF 1 qemuconf\-0.0
+.SS NAME
+.PP
+qemuconf \- a simple config parser for qemu
+.SS SYNOPSIS
+.PP
+\f[B]qemuconf\f[] [\f[B]\-q\f[] \f[C]exec\f[]] \f[I]config\-file\f[]
+[\-\- qemu\-options ...]
+.PP
+\f[B]qemuconf\f[] [\f[B]\-v\f[]]
+.SS DESCRIPTION
+.PP
+\f[B]qemuconf\f[] executes qemu with arguments compiled from a config
+file.
+.SS OPTIONS
+.PP
+\f[B]\-q\f[] \f[C]exec\f[]
+.PD 0
+.P
+.PD
+Sets the the default binary.
+This option may be overwritten by the \f[B]binary\f[]
+.PD 0
+.P
+.PD
+option in the config file.
+.PP
+\f[B]\-n\f[]
+.PD 0
+.P
+.PD
+instead of executing the argument list will be printed to stdout.
+.PP
+\f[B]\-v\f[]
+.PD 0
+.P
+.PD
+prints version and exits.
+.SS EXAMPLES
+.IP
+.nf
+\f[C]
+cwd\ \ \ \ /var/qemu/void
+binary\ /usr/bin/qemu\-system\-x86_64
+smp\ \ \ \ 8
+m\ \ \ \ \ \ 1024
+enable\-kvm
+cdrom\ ../void/void\-live\-x86_64\-latest.iso
+drive
+\ \ \ \ if\ \ \ \ \ \ virtio
+\ \ \ \ file\ \ \ \ /dev/vg0/vm1
+net\ nic
+\ \ \ \ vlan\ \ \ \ 0
+\ \ \ \ model\ \ \ virtio
+\ \ \ \ macaddr\ 82:82:9D:AF:F0:1C
+net\ user
+\ \ \ \ vlan\ \ \ \ 0
+vnc\ 127.0.0.1:1
+\f[]
+.fi
+.PP
+This config file will execute the following command:
+.SS DIAGNOSTICS
+.PP
+To show the produced arguments list use the following:
+.IP
+.nf
+\f[C]
+qemuconf\ \-q\ echo\ config.conf
+\f[]
+.fi

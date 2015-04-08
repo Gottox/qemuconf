@@ -15,8 +15,10 @@
 
 #define DROP(x, y) { for(y = i; i < len && x; i++); }
 #define BEGINS(x, y) (strncmp(x, y, strlen(y)) == 0)
+#define DEFAULT_BINARY "qemu-system-x86_64"
 
 static int start();
+static int dump();
 static int addoptarg(char *arg, int len);
 static int addopt(char *opt, int len);
 static int compact(char *text, int i, int len, int minindent);
@@ -27,8 +29,8 @@ static int argify(char **value, int len);
 char **cargv;
 char **curopt = NULL;
 char *cwd = ".";
-static char *binary = "qemu-system-x86_64";
-int cargc = 0;
+static char *binary = NULL;
+int cargc = 1;
 int maxargc = 0;
 
 int
@@ -36,6 +38,17 @@ start() {
 	execvp(binary, cargv);
 	perror(binary);
 	return 1;
+}
+
+int dump() {
+	int i;
+
+	fputs(cargv[0], stdout);
+	for(i = 1; i < cargc; i++) {
+		fputc(' ', stdout);
+		fputs(cargv[i], stdout);
+	}
+	fputc('\n', stdout);
 }
 
 int
@@ -214,18 +227,22 @@ loadconfig(char *path) {
 
 int main(int argc, char *argv[]) {
 	int opt;
+	int (*action)() = start;
 
-	while ((opt = getopt(argc, argv, "q:V")) != -1) {
+	while ((opt = getopt(argc, argv, "nq:V")) != -1) {
 		switch(opt) {
 			case 'q':
 				binary = optarg;
+				break;
+			case 'n':
+				action = dump;
 				break;
 			case 'V':
 				puts("qemuconf-" VERSION);
 				return EXIT_SUCCESS;
 usage:
 			default:
-				printf("Usage: %s [-q exec] [-V] <name> [-- [qemu args...]]\n", argv[0]);
+				printf("Usage: %s [-n] [-q exec] [-V] CONFIGFILE [-- [qemu args...]]\n", argv[0]);
 				return EXIT_FAILURE;
 		}
 	}
@@ -242,8 +259,6 @@ usage:
 		return EXIT_FAILURE;
 	}
 
-	cargv[cargc++] = binary;
-
 	if(loadconfig(argv[optind++]))
 		return EXIT_FAILURE;
 
@@ -251,7 +266,10 @@ usage:
 		cargv[cargc] = argv[optind];
 	}
 
-	if(start())
+	if(!binary)
+		binary = DEFAULT_BINARY;
+	cargv[0] = binary;
+	if(action())
 		return EXIT_FAILURE;
 	return EXIT_SUCCESS;
 }
