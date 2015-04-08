@@ -64,4 +64,4 @@ DIAGNOSTICS
 
 To show the produced arguments list use the following:
 
-	qemuconf -q echo config.conf
+	qemuconf -n config.conf
