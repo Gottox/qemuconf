@@ -23,7 +23,6 @@ static int addopt(char *opt, int len);
 static int compact(char *text, int i, int len, int minindent);
 static int parseconfig(char *text, int len);
 static int loadconfig(char *path);
-static int argify(char **value, int len);
 
 char **cargv;
 char **curopt = NULL;
