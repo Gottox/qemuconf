@@ -22,7 +22,7 @@ qemu@.service: qemu@.service.in
 qemu.runit: qemu.runit.in
 	sed "s#PREFIX#$(PREFIX)#g;s#ETCDIR#$(ETCDIR)#" $< > $@
 
-install:
+install: qemuconf
 	mkdir -p $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(MANPREFIX)/man1 \
 		$(ETCDIR)/qemu.d
 	cp -f qemuconf $(DESTDIR)$(PREFIX)/bin
