@@ -1,4 +1,4 @@
-QEMUCONF 1 qemuconf-0.2.0
+QEMUCONF 1 qemuconf-0.2.1
 =========================
 
 NAME
