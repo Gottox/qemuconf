@@ -4,6 +4,7 @@ After=syslog.target network.target
 
 [Service]
 ExecStart=PREFIX/bin/qemuconf ETCDIR/qemu.d/%I.conf
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
