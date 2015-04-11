@@ -107,14 +107,14 @@ compact(char *text, int i, int len, int minindent) {
 		}
 
 		DROP(isalnum(text[i]), _i);
-		memcpy(&text[w], &text[_i], i - _i);
+		memmove(&text[w], &text[_i], i - _i);
 		w += i - _i;
 		DROP(isspace(text[i]) && text[i] != '\n', _i);
 		if(_i != i) {
 			text[w++] = '=';
 		}
 		DROP(text[i] != '\n', _i);
-		memcpy(&text[w], &text[_i], i - _i);
+		memmove(&text[w], &text[_i], i - _i);
 		w += i - _i;
 		text[w++] = ',';
 		curindent = 0;
@@ -216,7 +216,8 @@ loadconfig(char *path) {
 	do {
 		len += r;
 		text = realloc(text, sizeof(char) * (len + BUFSIZ));
-	} while((r = fread(text, sizeof(char), (len + BUFSIZ), file)) > 0);
+	} while((r = fread(text, sizeof(char), (len + BUFSIZ - 1), file)) > 0);
+	text[len] = 0;
 
 	if(ferror(file)) {
 		perror(path);
