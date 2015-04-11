@@ -45,6 +45,6 @@ for proc in /proc/*/exe; do
 	echo "----"
 	echo "$conf"
 	echo "----"
-	read -p "Save as (enter to skip)" name
+	read -p "Save as (enter to skip) " name
 	[ "$name" ] && echo "$conf" > $name
 done
